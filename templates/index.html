@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>IP Tracker</title>
+    <script>
+      async function trackIP(event) {
+        event.preventDefault();
+        const ip = document.getElementById('ip').value;
+        const response = await fetch('/track', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `ip=${ip}`
+        });
+        const data = await response.json();
+        displayResult(data);
+      }
+
+      function displayResult(data) {
+        const resultContainer = document.getElementById('result');
+        const details = data.details;
+        const score = data.score;
+        const rating = data.rating;
+
+        resultContainer.innerHTML = `
+          <h2>IP Address Details</h2>
+          <p><strong>IP:</strong> ${details.ip}</p>
+          <p><strong>City:</strong> ${details.city}</p>
+          <p><strong>Country:</strong> ${details.country}</p>
+          <p><strong>Location:</strong> ${details.loc}</p>
+          <p><strong>Organization:</strong> ${details.org}</p>
+          <p><strong>Region:</strong> ${details.region}</p>
+          <p><strong>Timezone:</strong> ${details.timezone}</p>
+          <h3>VirusTotal Data</h3>
+          <p><strong>Owner:</strong> ${details.virustotal.as_owner}</p>
+          <p><strong>ASN:</strong> ${details.virustotal.asn}</p>
+          <p><strong>Country:</strong> ${details.virustotal.country}</p>
+          <h4>Detected URLs</h4>
+          <ul>${details.virustotal.detected_urls.map(url => `<li>${url.url} - Positives: ${url.positives} / ${url.total} - Scan Date: ${url.scan_date}</li>`).join('')}</ul>
+          <h4>Resolutions</h4>
+          <ul>${details.virustotal.resolutions.map(res => `<li>${res.hostname} - Last Resolved: ${res.last_resolved}</li>`).join('')}</ul>
+          <h2>Score: ${score}</h2>
+          <h2>Rating: ${rating}</h2>
+        `;
+      }
+    </script>
+</head>
+<body>
+    <h1>IP Tracker</h1>
+    <form onsubmit="trackIP(event)">
+        <label for="ip">Enter IP address:</label>
+        <input type="text" id="ip" name="ip" required>
+        <button type="submit">Track</button>
+    </form>
+    <div id="result"></div>
+</body>
+</html>
